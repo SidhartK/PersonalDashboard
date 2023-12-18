@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd 
 from db_fxns import * 
 import streamlit.components.v1 as stc
+from streamlit_datalist import stDatalist
 
 
 
@@ -30,15 +31,29 @@ def app():
 		col1,col2 = st.columns(2)
 		
 		with col1:
-			task = st.text_area("Task To Do")
+			name = st.text_input("Task Name")
+			area = stDatalist("This datalist is...", ["great", "cool", "neat"])
+			description = st.text_area("Task Description")
 
 		with col2:
-			task_status = st.selectbox("Status",["ToDo","Doing","Done"])
-			task_due_date = st.date_input("Due Date")
-
+			priority = st.selectbox("Priority",Task.OPTIONS["priority"])
+			status = Task.OPTIONS["status"][1] if st.toggle("Task Done") else Task.OPTIONS["status"][0]
+			due_date = st.date_input("Due Date")
+			due_time = st.time_input("Time", datetime.time(0, 0), step=datetime.timedelta(minutes=5))
+			due_at = datetime.datetime.combine(due_date,due_time)
+		
 		if st.button("Add Task"):
-			add_data(task,task_status,task_due_date)
-			st.success("Added ::{} ::To Task".format(task))
+			import pdb; pdb.set_trace()
+			task = Task(
+				name=name,
+				status=status,
+				area=area,
+				priority=priority,
+				due_at=due_at,
+				description=description
+			)
+			add_data(Task(name=task,status=task_status,due_date=task_due_date))
+			st.success("Added ::{} ::To Task List".format(name))
 
 
 	elif choice == "Read":
@@ -63,12 +78,13 @@ def app():
 		with st.expander("Current Data"):
 			result = view_all_data()
 			# st.write(result)
-			clean_df = pd.DataFrame(result,columns=["Task","Status","Date"])
+			clean_df = pd.DataFrame(result,columns=Task.get_key_list())
 			st.dataframe(clean_df)
 
-		list_of_tasks = [i[0] for i in view_all_task_names()]
-		selected_task = st.selectbox("Task",list_of_tasks)
-		task_result = get_task(selected_task)
+		import pdb; pdb.set_trace()
+		# list_of_tasks = [i[0] for i in view_all_task_names()]
+		# selected_task = st.selectbox("Task",list_of_tasks)
+		# task_result = get_task(selected_task)
 		# st.write(task_result)
 
 		if task_result:
